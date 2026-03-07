@@ -1,6 +1,7 @@
 import csv
 import os
 import sys
+import argparse
 
 from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
 
@@ -10,63 +11,109 @@ from baseline import FallDetectorBaseline
 CSV_PATH = "datasets/public/metadata.csv"
 SEQUENCES_PATH = "datasets/public/sequences"
 
-model_thresholds = [0.5]
 
-split = sys.argv[1]
+
+
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--split", choices=["dev" , "eval"], required=True)
+parser.add_argument("--threshold", type=float, required=True)
+
+args = parser.parse_args()
+
+split = args.split
+threshold = args.threshold
+
+
 
 pose_estimator = PoseEstimator()
 # model = FallDetectorBaseline(threshold=THRESHOLD)
 
-confusion_matrices = []
-accuracy_scores = []
-precision_scores = []
-recall_scores = []
 
 
 
 
 
-for threshold in model_thresholds:
-    model = FallDetectorBaseline(threshold = threshold)
 
-    y_true = []
-    y_pred = []
 
-    with open(CSV_PATH, "r") as f:
-        reader = csv.DictReader(f)
+model = FallDetectorBaseline(threshold = threshold)
 
-        for row in reader:
-            if row["split"] == split:
+y_true = []
+y_pred = []
 
-                sequence_name = row["sequence"]
-                label = int(row["label"])
-                
-                sequence_path = os.path.join(SEQUENCES_PATH, sequence_name)
-                prediction = model.predict(sequence_path, pose_estimator)
+with open(CSV_PATH, "r") as f:
+    reader = csv.DictReader(f)
 
-                y_true.append(label)
-                y_pred.append(prediction)
+    for row in reader:
+        if row["split"] == split:
 
-    confusion_matrices.append(confusion_matrix(y_true, y_pred))
-    accuracy_scores.append(accuracy_score(y_true, y_pred))
-    precision_scores.append(precision_score(y_true, y_pred))
-    recall_scores.append(recall_score(y_true, y_pred))
+            sequence_name = row["sequence"]
+            label = int(row["label"])
+            
+            sequence_path = os.path.join(SEQUENCES_PATH, sequence_name)
+            prediction = model.predict(sequence_path, pose_estimator)
+
+            y_true.append(label)
+            y_pred.append(prediction)
+
+    
+    cm = confusion_matrix(y_true, y_pred)
+    accuracy = accuracy_score(y_true, y_pred)
+    precision = precision_score(y_true, y_pred)
+    recall = recall_score(y_true, y_pred)
     
 
 
-for results in range(len(model_thresholds)):
-    print (f"Evaluation for threshold: {model_thresholds[results]}")
 
-    cm = confusion_matrices[results]
+print (f"Evaluation for split: {split} with a threshold of: {threshold}")
 
-    tn, fp, fn, tp = cm.ravel()
 
-    print (f"Confusion Matrix: ")
-    print (cm)
+
+tn, fp, fn, tp = cm.ravel()
+
+print (f"Confusion Matrix: ")
+print (cm)
 print(f"TP: {tp}")
 print(f"FP: {fp}")
 print(f"TN: {tn}")
 print(f"FN: {fn}")
-print (f"Accuracy: {accuracy_scores[results]}")
-print (f"Recall: {recall_scores[results]}")
-print (f"Precision: {precision_scores[results]}")
+print (f"Accuracy: {accuracy}")
+print (f"Recall: {recall}")
+print (f"Precision: {precision}")
+
+
+results_path = f"results/baseline_{split}.csv"
+
+file_exists = os.path.isfile(results_path)
+
+with open(results_path, "a", newline="") as f:
+    writer = csv.writer(f)
+
+    if not file_exists:
+        writer.writerow([
+            "model",
+            "split",
+            "threshold",
+            "tp",
+            "fp",
+            "tn", 
+            "fn",
+            "accuracy", 
+            "precision", 
+            "recall"
+        ])
+
+    writer.writerow([
+        "baseline",
+        split,
+        threshold,
+        tp,
+        fp,
+        tn,
+        fn,
+        accuracy,
+        precision,
+        recall
+
+    ])
