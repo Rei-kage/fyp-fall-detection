@@ -1,5 +1,6 @@
 import csv
 import os
+import sys
 
 from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
 
@@ -9,7 +10,9 @@ from baseline import FallDetectorBaseline
 CSV_PATH = "datasets/public/metadata.csv"
 SEQUENCES_PATH = "datasets/public/sequences"
 
-model_thresholds = [0.3,0.4]
+model_thresholds = [0.5]
+
+split = sys.argv[1]
 
 pose_estimator = PoseEstimator()
 # model = FallDetectorBaseline(threshold=THRESHOLD)
@@ -33,7 +36,7 @@ for threshold in model_thresholds:
         reader = csv.DictReader(f)
 
         for row in reader:
-            if row["split"] == "dev":
+            if row["split"] == split:
 
                 sequence_name = row["sequence"]
                 label = int(row["label"])
@@ -53,8 +56,17 @@ for threshold in model_thresholds:
 
 for results in range(len(model_thresholds)):
     print (f"Evaluation for threshold: {model_thresholds[results]}")
+
+    cm = confusion_matrices[results]
+
+    tn, fp, fn, tp = cm.ravel()
+
     print (f"Confusion Matrix: ")
-    print (confusion_matrices[results])
-    print (f"Accuracy: {accuracy_scores[results]}")
-    print (f"Recall: {recall_scores[results]}")
-    print (f"Precision: {precision_scores[results]}")
+    print (cm)
+print(f"TP: {tp}")
+print(f"FP: {fp}")
+print(f"TN: {tn}")
+print(f"FN: {fn}")
+print (f"Accuracy: {accuracy_scores[results]}")
+print (f"Recall: {recall_scores[results]}")
+print (f"Precision: {precision_scores[results]}")
