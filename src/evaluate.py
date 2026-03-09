@@ -6,7 +6,9 @@ import argparse
 from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
 
 from pose_estimator import PoseEstimator
-from baseline import FallDetectorBaseline
+from detectors.baseline import FallDetectorBaseline
+from detectors.temporal_model import FallDetectorTemporal
+from detectors.temporal_posture_model import FallDetectorTemporalPosture
 
 CSV_PATH = "datasets/public/metadata.csv"
 SEQUENCES_PATH = "datasets/public/sequences"
@@ -17,13 +19,24 @@ SEQUENCES_PATH = "datasets/public/sequences"
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--split", choices=["dev" , "eval"], required=True)
-parser.add_argument("--threshold", type=float, required=True)
+
+parser.add_argument("--model_type", choices=["baseline", "temporal", "temporal_posture"], required=True, help="which fall detection model to use")
+parser.add_argument("--split", choices=["dev" , "eval"], required=True, help="dataset split to evaluate")
+parser.add_argument("--disp_threshold", type=float, required=True, help="Displacement threshold")
+parser.add_argument("--velo_threshold", type=float, default=None, help="Velocity threshold (for temporal model)")
+parser.add_argument("--duration_threshold", type=int, default= None, help="Duration threshold (for temporal posture model) ")
+parser.add_argument("--posture_threshold", type=float, default=None, help="Posture threshold (for temporal posture model)")
+
+
 
 args = parser.parse_args()
 
+model_type = args.model_type
 split = args.split
-threshold = args.threshold
+disp_threshold = args.disp_threshold
+velo_threshold = args.velo_threshold
+duration_threshold = args.duration_threshold
+posture_threshold = args.posture_threshold
 
 
 
@@ -36,8 +49,23 @@ pose_estimator = PoseEstimator()
 
 
 
+if model_type == "baseline":
 
-model = FallDetectorBaseline(threshold = threshold)
+    model = FallDetectorBaseline(threshold = disp_threshold)
+
+elif model_type == "temporal":
+    if velo_threshold is None:
+        raise ValueError(f"Temporal model requires args --velo_threshold")
+    
+    model = FallDetectorTemporal(disp_threshold = disp_threshold, velo_threshold = velo_threshold)
+
+elif model_type == "temporal_posture":
+    if posture_threshold is None:
+        raise ValueError(f"Temporal posture model requires args --posture_threshold")
+    
+    model = FallDetectorTemporalPosture(disp_threshold = disp_threshold, velo_threshold=velo_threshold, duration_threshold = duration_threshold, posture_threshold = posture_threshold)
+
+
 
 y_true = []
 y_pred = []
@@ -62,11 +90,15 @@ with open(CSV_PATH, "r") as f:
     accuracy = accuracy_score(y_true, y_pred)
     precision = precision_score(y_true, y_pred)
     recall = recall_score(y_true, y_pred)
+    F1 = 2 * (precision * recall) / (precision + recall)
     
 
 
+if model_type == "baseline":
+    print (f"Evaluation for split: {split} with a diplacement threshold of: {disp_threshold} ")
 
-print (f"Evaluation for split: {split} with a threshold of: {threshold}")
+elif model_type == "temporal":
+    print (f"Evaluation for split {split} with a displacement threshold of: {disp_threshold} and a velocity threshold of: {velo_threshold}")
 
 
 
@@ -83,7 +115,26 @@ print (f"Recall: {recall}")
 print (f"Precision: {precision}")
 
 
-results_path = f"results/baseline_{split}.csv"
+
+results_path = f"results/results_{split}.csv"
+
+header = [
+                "model",
+                "split",
+                "disp_threshold",
+                "velo_threshold",
+                "duration_threshold",
+                "posture_threshold",
+                "tp",
+                "fp",
+                "tn", 
+                "fn",
+                "accuracy", 
+                "precision", 
+                "recall",
+                "F1_score"
+            ]
+
 
 file_exists = os.path.isfile(results_path)
 
@@ -91,29 +142,29 @@ with open(results_path, "a", newline="") as f:
     writer = csv.writer(f)
 
     if not file_exists:
-        writer.writerow([
-            "model",
-            "split",
-            "threshold",
-            "tp",
-            "fp",
-            "tn", 
-            "fn",
-            "accuracy", 
-            "precision", 
-            "recall"
-        ])
 
-    writer.writerow([
-        "baseline",
+        writer.writerow(header)
+             
+  
+
+    row = ([
+        model_type,
         split,
-        threshold,
+        disp_threshold,
+        velo_threshold if model_type == "temporal" or "temporal_posture" else "",
+        duration_threshold if model_type =="temporal_posture" else "",
+        posture_threshold if model_type =="temporal_posture" else "",
         tp,
         fp,
         tn,
         fn,
         accuracy,
         precision,
-        recall
+        recall,
+        F1
 
     ])
+
+    writer.writerow(row)
+
+    
