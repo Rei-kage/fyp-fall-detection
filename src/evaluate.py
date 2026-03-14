@@ -26,6 +26,7 @@ parser.add_argument("--disp_threshold", type=float, required=True, help="Displac
 parser.add_argument("--velo_threshold", type=float, default=None, help="Velocity threshold (for temporal model)")
 parser.add_argument("--duration_threshold", type=int, default= None, help="Duration threshold (for temporal posture model) ")
 parser.add_argument("--posture_threshold", type=float, default=None, help="Posture threshold (for temporal posture model)")
+parser.add_argument("--visualise", action="store_true" , help="Show mediapipe window ")
 
 
 
@@ -40,7 +41,7 @@ posture_threshold = args.posture_threshold
 
 
 
-pose_estimator = PoseEstimator()
+pose_estimator = PoseEstimator(visualise=args.visualise)
 # model = FallDetectorBaseline(threshold=THRESHOLD)
 
 
@@ -80,7 +81,7 @@ with open(CSV_PATH, "r") as f:
             label = int(row["label"])
             
             sequence_path = os.path.join(SEQUENCES_PATH, sequence_name)
-            prediction = model.predict(sequence_path, pose_estimator)
+            prediction = model.predict(sequence_path, pose_estimator, sequence_name)
 
             y_true.append(label)
             y_pred.append(prediction)

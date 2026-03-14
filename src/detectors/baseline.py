@@ -9,7 +9,7 @@ class FallDetectorBaseline:
         # self.duration = duration
 
         #predict whether a sequence classifies as fall (1) or not (0)
-        def predict(self, sequence_path, pose_estimator):
+        def predict(self, sequence_path, pose_estimator, sequence_name):
 
             frame_files = sorted(os.listdir(sequence_path))
 
@@ -23,7 +23,7 @@ class FallDetectorBaseline:
                 if frame is None: #if frame is not detected it moves onto the next frame
                     continue
 
-                head = pose_estimator.get_head_coordinates(frame) # gets coordinate of the head
+                head = pose_estimator.get_head_coordinates(frame,sequence_name) # gets coordinate of the head
 
                 if head: # if head is detected, then the coordinates are stored in the array
                     _, y = head
@@ -38,8 +38,10 @@ class FallDetectorBaseline:
             print (f"Displacement: ", displacement)
 
             if displacement > self.threshold:
-                return 1 # fall
+                print(f"Sequence: {sequence_path} is a fall")
+                return 1 # fall 
             else:
+                print(f"Sequence: {sequence_path} is an adl")
                 return 0 # ADL
 
            

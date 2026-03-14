@@ -6,6 +6,8 @@ def extract_frames(video_path):
     
     #create VideoCapture object to open and read video file
     video = cv2.VideoCapture(video_path)
+    total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    print(f"Video reports {total_frames} frames")
 
     #validation for video
     if not video.isOpened():

@@ -12,7 +12,7 @@ class FallDetectorTemporalPosture:
         self.posture_threshold = posture_threshold
         
  
-    def predict(self, sequence_path, pose_estimator):
+    def predict(self, sequence_path, pose_estimator, sequence_name):
 
         frame_files = sorted(os.listdir(sequence_path))
 
@@ -27,7 +27,7 @@ class FallDetectorTemporalPosture:
             if frame is None:
                 continue
 
-            coords = pose_estimator.get_head_and_hip_coordinates(frame)
+            coords = pose_estimator.get_head_and_hip_coordinates(frame, sequence_name)
 
             if coords:
                 
@@ -116,6 +116,8 @@ class FallDetectorTemporalPosture:
         
         
         if displacement > self.disp_threshold and sustained_motion and  posture_on_fall < self.posture_threshold:
+            print(f"Sequence: {sequence_path} is a fall")
             return 1 # fall
         else:
+            print(f"Sequence: {sequence_path} is an adl")
             return 0 # ADL

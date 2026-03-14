@@ -8,7 +8,7 @@ class FallDetectorTemporal:
         self.disp_threshold = disp_threshold
         self.velo_threshold = velo_threshold
 
-    def predict(self, sequence_path, pose_estimator):
+    def predict(self, sequence_path, pose_estimator, sequence_name):
 
             frame_files = sorted(os.listdir(sequence_path))
 
@@ -22,7 +22,7 @@ class FallDetectorTemporal:
                 if frame is None: #if frame is not detected it moves onto the next frame
                     continue
 
-                head = pose_estimator.get_head_coordinates(frame) # gets coordinate of the head
+                head = pose_estimator.get_head_coordinates(frame, sequence_name) # gets coordinate of the head
 
                 if head: # if head is detected, then the coordinates are stored in the array
                     _, y = head
@@ -67,7 +67,9 @@ class FallDetectorTemporal:
 
 
             if displacement > self.disp_threshold and max_velocity > self.velo_threshold:
+                print(f"Sequence: {sequence_path} is a fall")
                 return 1 # fall
             else:
+                print(f"Sequence: {sequence_path} is an adl")
                 return 0 # ADL
 
