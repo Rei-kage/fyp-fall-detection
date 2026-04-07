@@ -33,7 +33,7 @@ class FallDetectorTemporal:
             
 
             #------------------------------------------------------------------------------------#
-            #---------------baseline threshold --------------------------------------------------#
+            #---------------baseline feature --------------------------------------------------#
 
             displacement = max(head_y_values) - min(head_y_values) #measures the distance of the head falling
             print (f"Sequence: {sequence_path}")
@@ -43,7 +43,7 @@ class FallDetectorTemporal:
 
 
             #------------------------------------------------------------------------------------#
-            #---------------temporal threshold --------------------------------------------------#
+            #---------------temporal feature --------------------------------------------------#
             
             velocities = []
 

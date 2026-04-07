@@ -6,7 +6,7 @@ class FallDetectorBaseline:
 
         def __init__(self, threshold):
             self.threshold = threshold
-        # self.duration = duration
+        
 
         #predict whether a sequence classifies as fall (1) or not (0)
         def predict(self, sequence_path, pose_estimator, sequence_name):

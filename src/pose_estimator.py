@@ -46,7 +46,17 @@ class PoseEstimator:
                     -1
                 )
 
-                cv2.imshow(f"Pose Tracking {sequence_name}", frame)
+                cv2.putText(
+                    frame,
+                    f"Sequence: {sequence_name}",
+                    (20,40),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1,
+                    (255,0,0),
+                    2
+                )
+
+                cv2.imshow(f"Pose Tracking", frame)
 
                 if cv2.waitKey(1) & 0xFF ==ord("q"):
                     return None

@@ -43,7 +43,7 @@ class FallDetectorTemporalPosture:
             return 0
         
         #------------------------------------------------------------------------------------#
-        #---------------baseline threshold --------------------------------------------------#
+        #---------------baseline geature --------------------------------------------------#
 
         displacement = max(head_y_values) - min(head_y_values) #measures the distance of the head falling
         print (f"Sequence: {sequence_path}")
@@ -53,7 +53,7 @@ class FallDetectorTemporalPosture:
 
 
         #------------------------------------------------------------------------------------#
-        #---------------temporal threshold --------------------------------------------------#
+        #---------------temporal feature --------------------------------------------------#
             
         velocities = []
 
@@ -84,7 +84,7 @@ class FallDetectorTemporalPosture:
 
 
         #------------------------------------------------------------------------------------#
-        #---------------posture threshold --------------------------------------------------#
+        #---------------posture feature --------------------------------------------------#
 
         debug_path = f"debug_{os.path.basename(sequence_path)}.csv"
 
