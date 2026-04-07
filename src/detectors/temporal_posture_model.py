@@ -43,7 +43,7 @@ class FallDetectorTemporalPosture:
             return 0
         
         #------------------------------------------------------------------------------------#
-        #---------------baseline geature --------------------------------------------------#
+        #---------------baseline feature --------------------------------------------------#
 
         displacement = max(head_y_values) - min(head_y_values) #measures the distance of the head falling
         print (f"Sequence: {sequence_path}")
