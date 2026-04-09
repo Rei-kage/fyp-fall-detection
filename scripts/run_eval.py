@@ -15,21 +15,22 @@ MODEL_COMMANDS = {
     "temporal": [
         "python",
         "src/evaluate.py",
-        "--model_type", "baseline",
+        "--model_type", "temporal",
         "--split", "eval",
-        "--disp_threshold_threshold", "0.4",
-        "velo_threshold", "0.02",
+        "--disp_threshold", "0.4",
+        "--velo_threshold", "0.025",
         "--visualise"
     ],
 
     "temporal_posture": [
         "python",
         "src/evaluate.py",
-        "--model_type", "baseline",
+        "--model_type", "temporal_posture",
         "--split", "eval",
-        "--disp_threshold_threshold", "0.4",
-        "velo_threshold", "0.02",
-        "--posture_threshold", "0.025",
+        "--disp_threshold", "0.4",
+        "--velo_threshold", "0.02",
+        "--duration_threshold", "3",
+        "--posture_threshold", "0.25",
         "--visualise"
     ],
     

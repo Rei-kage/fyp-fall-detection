@@ -79,7 +79,7 @@ class FallDetectorTemporalPosture:
                 print (f"sustained motion detected")
                 sustained_motion = True
 
-                fall_frame_index = i
+                fall_frame_index = i + 1
                 break
 
 
@@ -93,10 +93,6 @@ class FallDetectorTemporalPosture:
             posture_on_fall = posture_values[fall_frame_index]
         else:
             posture_on_fall = None
-
-        
-
-        
         
         if sustained_motion:
 

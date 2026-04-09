@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-VIDEO_PATH = "experiments/preliminary_head_detection/raw_videos/IMG_1704.MOV"
+VIDEO_PATH = "experiments/preliminary_head_detection/raw_videos/IMG_1705 2.MOV"
 
 def main():
     frame_numbers = []

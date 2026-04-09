@@ -39,9 +39,9 @@ velo_threshold = args.velo_threshold
 duration_threshold = args.duration_threshold
 posture_threshold = args.posture_threshold
 
-
-
 pose_estimator = PoseEstimator(visualise=args.visualise)
+
+
 # model = FallDetectorBaseline(threshold=THRESHOLD)
 
 
@@ -63,6 +63,11 @@ elif model_type == "temporal":
 elif model_type == "temporal_posture":
     if posture_threshold is None:
         raise ValueError(f"Temporal posture model requires args --posture_threshold")
+    if velo_threshold is None:
+        raise ValueError(f"Temporal posture model requires args --posture_threshold")
+    if duration_threshold is None:
+        raise ValueError(f"Temporal posture model requires args --duration_threshold")
+    
     
     model = FallDetectorTemporalPosture(disp_threshold = disp_threshold, velo_threshold=velo_threshold, duration_threshold = duration_threshold, posture_threshold = posture_threshold)
 
@@ -70,6 +75,7 @@ elif model_type == "temporal_posture":
 
 y_true = []
 y_pred = []
+per_sequence_rows = [] 
 
 with open(CSV_PATH, "r") as f:
     reader = csv.DictReader(f)
@@ -85,6 +91,29 @@ with open(CSV_PATH, "r") as f:
 
             y_true.append(label)
             y_pred.append(prediction)
+
+            if label == 1 and prediction == 1:
+                outcome = "TP"
+            elif label == 0 and prediction == 0:
+                outcome = "TN"
+            elif label == 0 and prediction == 1:
+                outcome = "FP"
+            else:
+                outcome = "FN"
+            
+            per_sequence_rows.append([
+                model_type,
+                split,
+                disp_threshold,
+                velo_threshold if model_type in ["temporal", "temporal_posture"] else "",
+                duration_threshold if model_type =="temporal_posture" else "",
+                posture_threshold if model_type =="temporal_posture" else "",
+                sequence_name,
+                label,
+                prediction,
+                outcome
+
+            ])
 
     
     cm = confusion_matrix(y_true, y_pred)
@@ -115,9 +144,11 @@ print (f"Accuracy: {accuracy}")
 print (f"Recall: {recall}")
 print (f"Precision: {precision}")
 
+fnr = fn / (tp + fn) if (tp + fn) > 0 else 0
+fpr = fp / (fp + tn) if (fp + tn) > 0 else 0
 
 
-results_path = f"results/results_{split}.csv"
+results_path = f"evidence/results/results_{split}.csv"
 
 header = [
                 "model",
@@ -133,7 +164,9 @@ header = [
                 "accuracy", 
                 "precision", 
                 "recall",
-                "F1_score"
+                "F1_score",
+                "fnr"
+                "fpr"
             ]
 
 
@@ -152,7 +185,7 @@ with open(results_path, "a", newline="") as f:
         model_type,
         split,
         disp_threshold,
-        velo_threshold if model_type == "temporal" or "temporal_posture" else "",
+        velo_threshold if model_type in ["temporal", "temporal_posture"] else "",
         duration_threshold if model_type =="temporal_posture" else "",
         posture_threshold if model_type =="temporal_posture" else "",
         tp,
@@ -162,10 +195,38 @@ with open(results_path, "a", newline="") as f:
         accuracy,
         precision,
         recall,
-        F1
+        F1,
+        fnr,
+        fpr
 
     ])
 
+
+
+
     writer.writerow(row)
 
+per_sequence_path = f"evidence/per_sequence/per_sequence_{split}.csv"
+
+per_sequence_header = [
+    "model",
+    "split",
+    "disp_threshold",
+    "velo_threshold",
+    "duration_threshold",
+    "posture_threshold",
+    "sequence_name",
+    "ground_truth",
+    "prediction",
+    "outcome"
+]
+
+per_sequence_file_exists = os.path.isfile(per_sequence_path)
+
+with open(per_sequence_path, "a", newline="") as f:
+    writer = csv.writer(f)
+
+    if not per_sequence_file_exists:
+        writer.writerow(per_sequence_header)
     
+    writer.writerows(per_sequence_rows)
