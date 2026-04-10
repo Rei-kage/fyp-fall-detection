@@ -54,7 +54,7 @@ class LiveFeedFallDetector:
         #Temporal feature
         velocities = []
         for i in range(len(head_values) - 1):
-            v = max(head_values[i + 1] - head_values[i])
+            v = max(0.0, head_values[i + 1] - head_values[i])
             velocities.append(v)
 
         max_velocity = max(velocities) if velocities else 0.0
@@ -118,31 +118,33 @@ def draw_overlay(
 ):
 
     h, w, _= frame.shape
-    if results.pose_landmarks:
+    if results is not None and results.pose_landmarks is not None:
         mp_drawing.draw_landmarks(
             frame,
             results.pose_landmarks,
             mp_pose.POSE_CONNECTIONS
         )
     
-    nose_landmark = results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE]
-    hx = int (nose_landmark.x * w)
-    hy = int(head_y * h)
-    hip_pixel = int (hip_y * h)
+        nose_landmark = results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE]
+        hx = int (nose_landmark.x * w)
+        hy = int(head_y * h)
+        hip_pixel = int (hip_y * h)
 
-    cv2.circle(
-        frame(hx, hy),
-        6,
-        (0,0,255)
-        -1
-    )
+        cv2.circle(
+            frame,
+            (hx, hy),
+            6,
+            (0,0,255),
+            -1
+        )
 
-    cv2.circle(
-        frame(hx, hip_pixel),
-        6,
-        (255,0,0)
-        -1
-    )
+        cv2.circle(
+            frame,
+            (hx, hip_pixel),
+            6,
+            (255,0,0),
+            -1
+        )
 
     cv2.putText(
         frame,
